@@ -6,20 +6,21 @@ import logging
 import time
 import os
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
-MQTT_HOST = os.environ.get("MQTT_HOST", "35.233.92.84")  # change to your broker IP
+MQTT_HOST = os.environ.get("MQTT_HOST", "10.132.0.3")  # change to your broker IP
 MQTT_PORT = int(os.environ.get("MQTT_PORT", "1883"))
 MQTT_USER = os.environ.get("MQTT_USER", "device_username")  # set if you use auth
 MQTT_PASS = os.environ.get("MQTT_PASS", "device_password")
 
 @functions_framework.cloud_event
 def pubsub_to_mqtt(event):
-    logger.error("entering mqtt send")
-    logger.error(event)
+    logger.info("entering mqtt send")
+    logger.info(event)
     """Triggered from a message on a Cloud Pub/Sub topic."""
     decoded_data = base64.b64decode(event.data["message"]["data"]).decode("utf-8")
-    logger.error(f"Decoded data: {decoded_data}")
+    logger.info(f"Decoded data: {decoded_data}")
     try:
         data = json.loads(decoded_data)
     except:
@@ -38,6 +39,6 @@ def pubsub_to_mqtt(event):
     time.sleep(0.3)
     client.disconnect()
 
-    logger.error(f"Forwarded: {pubsub_message} to {topic}")
+    logger.info(f"Forwarded: {pubsub_message} to {topic}")
 
 

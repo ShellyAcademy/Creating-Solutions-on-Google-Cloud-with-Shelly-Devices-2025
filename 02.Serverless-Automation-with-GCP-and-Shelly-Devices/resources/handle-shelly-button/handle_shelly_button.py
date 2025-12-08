@@ -6,8 +6,9 @@ import logging
 from cloudevents.http import CloudEvent
 from google.cloud import pubsub_v1
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+
 
 MQTT_COMMAND_TOPIC_PATH = os.environ.get(
     "MQTT_COMMAND_TOPIC_PATH",
@@ -23,7 +24,7 @@ publisher = pubsub_v1.PublisherClient()
 
 
 def handle_shelly_button(cloudevent: CloudEvent) -> str:
-    logger.error("=== handle_shelly_button invoked ===")
+    logger.info("=== handle_shelly_button invoked ===")
 
     data = cloudevent.data
 
@@ -40,7 +41,7 @@ def handle_shelly_button(cloudevent: CloudEvent) -> str:
         return "Invalid Pub/Sub message"
 
     shelly_raw = base64.b64decode(encoded).decode("utf-8")
-    logger.error("Shelly raw JSON: %s", shelly_raw)
+    logger.info("Shelly raw JSON: %s", shelly_raw)
 
     try:
         shelly = json.loads(shelly_raw)
@@ -50,14 +51,14 @@ def handle_shelly_button(cloudevent: CloudEvent) -> str:
 
     events = shelly.get("params", {}).get("events", []) or []
     if not events:
-        logger.error("No events in Shelly payload")
+        logger.info("No events in Shelly payload")
         return "OK (no events)"
 
     for ev in events:
         ev_type = ev.get("event")
         component = ev.get("component")
 
-        logger.error("Event: type=%s, component=%s", ev_type, component)
+        logger.info("Event: type=%s, component=%s", ev_type, component)
 
         if not (isinstance(component, str) and component.startswith("bthomedevice:")):
             continue
@@ -81,7 +82,7 @@ def handle_shelly_button(cloudevent: CloudEvent) -> str:
             },
         }
 
-        logger.error(
+        logger.info(
             "Publishing MQTT command to %s: %s",
             MQTT_COMMAND_TOPIC_PATH,
             wrapper,

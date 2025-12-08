@@ -5,8 +5,8 @@ import logging
 from cloudevents.http import CloudEvent
 from google.cloud import pubsub_v1
  
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
  
 CLEAN_TOPIC_PATH = (
     "projects/creating-solutions-gcp-shelly/topics/shelly-clean-status"
@@ -19,18 +19,12 @@ publisher = pubsub_v1.PublisherClient()
  
  
 def normalize_shelly_status(cloudevent: CloudEvent) -> str:
-    logger.error("=== normalize_shelly_status invoked ===")
- 
-    data = cloudevent.data
-    if isinstance(data, (bytes, bytearray)):
-        try:
-            data = json.loads(data.decode("utf-8"))
-        except Exception:
-            logger.error("Failed to decode CloudEvent bytes")
-            return "Invalid CloudEvent"
- 
-    if not isinstance(data, dict) or "message" not in data:
-        logger.error("Unexpected CloudEvent.data: %s", data)
+    logger.info("=== normalize_shelly_status invoked ===")
+
+    try:
+        data = json.loads(cloudevent.data.decode("utf-8"))
+    except Exception:
+        logger.error("Failed to decode CloudEvent bytes")
         return "Invalid CloudEvent"
  
     encoded = data["message"].get("data")
@@ -38,22 +32,12 @@ def normalize_shelly_status(cloudevent: CloudEvent) -> str:
         logger.error("Missing Pub/Sub message.data")
         return "Invalid Pub/Sub message"
  
-    try:
-        raw = base64.b64decode(encoded).decode("utf-8")
-    except Exception:
-        logger.error("Failed to base64-decode Pub/Sub data")
-        return "Decode error"
- 
-    logger.error("Shelly raw JSON: %s", raw)
- 
-    try:
-        msg = json.loads(raw)
-    except Exception:
-        logger.error("Failed to parse Shelly JSON")
-        return "Invalid Shelly payload"
+    raw = base64.b64decode(encoded).decode("utf-8")
+    logger.info("Shelly raw JSON: %s", raw)
+    msg = json.loads(raw)
  
     if msg.get("method") != "NotifyStatus":
-        logger.error("Not a NotifyStatus message, skipping.")
+        logger.info("Not a NotifyStatus message, skipping.")
         return "OK (not NotifyStatus)"
  
     params = msg.get("params", {})
@@ -65,7 +49,7 @@ def normalize_shelly_status(cloudevent: CloudEvent) -> str:
     ts = params.get("ts")
     device = msg.get("src", "unknown")
  
-    logger.error(
+    logger.info(
         "Parsed status | device=%s | output=%s | apower=%s | tempC=%s | ts=%s",
         device, output, apower, temp_c, ts,
     )
@@ -74,7 +58,7 @@ def normalize_shelly_status(cloudevent: CloudEvent) -> str:
     high_power = isinstance(apower, (int, float)) and apower > POWER_ALERT_THRESHOLD
  
     if not (overheat or high_power):
-        logger.error("No alert detected.")
+        logger.info("No alert detected.")
         return "OK (no alert)"
  
     if overheat and high_power:
@@ -105,7 +89,7 @@ def normalize_shelly_status(cloudevent: CloudEvent) -> str:
     if output is not None:
         attrs["output"] = "true" if output else "false"
  
-    logger.error("Publishing alert to %s: %s | attrs=%s",
+    logger.info("Publishing alert to %s: %s | attrs=%s",
                  CLEAN_TOPIC_PATH, clean_event, attrs)
  
     publisher.publish(

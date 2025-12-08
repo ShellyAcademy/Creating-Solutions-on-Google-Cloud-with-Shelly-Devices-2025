@@ -6,8 +6,8 @@ import logging
 from cloudevents.http import CloudEvent
 from google.cloud import pubsub_v1
  
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
  
 PROJECT_ID = os.environ.get("GCP_PROJECT", "creating-solutions-gcp-shelly")
  
@@ -25,7 +25,7 @@ publisher = pubsub_v1.PublisherClient()
  
  
 def message_router(cloudevent: CloudEvent) -> str:
-    logger.error("=== message_router invoked ===")
+    logger.info("=== message_router invoked ===")
  
     data = cloudevent.data
     if isinstance(data, (bytes, bytearray)):
@@ -41,7 +41,7 @@ def message_router(cloudevent: CloudEvent) -> str:
         return "Invalid Pub/Sub message"
  
     raw = base64.b64decode(encoded).decode("utf-8")
-    logger.error("Raw MQTT JSON: %s", raw)
+    logger.info("Raw MQTT JSON: %s", raw)
  
     try:
         msg = json.loads(raw)
@@ -59,7 +59,7 @@ def message_router(cloudevent: CloudEvent) -> str:
         target_topic = EVENTS_TOPIC_PATH
         msg_type = "event"
     else:
-        logger.error("Unknown method '%s', skipping.", method)
+        logger.info("Unknown method '%s', skipping.", method)
         return "OK (ignored)"
  
     attrs = {
@@ -72,7 +72,7 @@ def message_router(cloudevent: CloudEvent) -> str:
     if "apower" in switch0:
         attrs["has_apower"] = "true"
  
-    logger.error(
+    logger.info(
         "Routing message method=%s device=%s to %s attrs=%s",
         method,
         device,
