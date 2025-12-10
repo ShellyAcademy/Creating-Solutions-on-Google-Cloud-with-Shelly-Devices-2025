@@ -34,9 +34,13 @@ def pubsub_to_mqtt(event):
     client = mqtt.Client()
     client.username_pw_set(MQTT_USER, MQTT_PASS)
     client.connect(MQTT_HOST, MQTT_PORT, keepalive=10)
-    client.publish(topic, pubsub_message, qos=0)
-    client.loop()
-    time.sleep(0.3)
+    
+    client.loop_start()
+
+    msg_info = client.publish(topic, pubsub_message, qos=1)
+    msg_info.wait_for_publish()
+
+    client.loop_stop()
     client.disconnect()
 
     logger.info(f"Forwarded: {pubsub_message} to {topic}")
