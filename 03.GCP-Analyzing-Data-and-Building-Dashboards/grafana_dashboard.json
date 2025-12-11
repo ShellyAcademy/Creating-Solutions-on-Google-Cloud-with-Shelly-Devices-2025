@@ -1,0 +1,802 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 0,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-bigquery-datasource",
+        "uid": "P67060240DC0051B8"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 10,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "format": 1,
+          "location": "",
+          "project": "creating-solutions-gcp-shelly",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  TIMESTAMP_TRUNC(\r\n    TIMESTAMP_SECONDS(LAX_INT64(data.params.ts)),\r\n    HOUR\r\n  ) AS time,\r\n  AVG(FLOAT64(data.params.`switch:0`.apower)) AS avg_power_w\r\nFROM `creating-solutions-gcp-shelly.creating_solutions_with_shelly.ingress_table`\r\nWHERE JSON_VALUE(data, '$.method') = \"NotifyStatus\"\r\n  AND data.params.`switch:0`.apower IS NOT NULL\r\n  AND $__timeFilter(TIMESTAMP_SECONDS(LAX_INT64(data.params.ts)))\r\n  and JSON_VALUE(data.src) = \"$device_id\"\r\nGROUP BY time\r\nORDER BY time;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Average power by hour",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-bigquery-datasource",
+        "uid": "P67060240DC0051B8"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "false": {
+                  "color": "red",
+                  "index": 1
+                },
+                "true": {
+                  "color": "green",
+                  "index": 0
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 7,
+        "x": 10,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "format": 1,
+          "location": "",
+          "project": "creating-solutions-gcp-shelly",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  TIMESTAMP_SECONDS(LAX_INT64(data.params.ts)) AS time,\r\n  data.params.`switch:0`.output AS state,\r\n  data.src AS device_id\r\nFROM `creating-solutions-gcp-shelly.creating_solutions_with_shelly.ingress_table`\r\nWHERE data.params.`switch:0`.output IS NOT NULL\r\nand JSON_VALUE(data.src) = \"$device_id\"\r\nORDER BY time;\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Timeline of output",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "grafana-bigquery-datasource",
+        "uid": "P67060240DC0051B8"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 7,
+        "x": 17,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "dataset": "creating_solutions_with_shelly",
+          "datasource": {
+            "type": "grafana-bigquery-datasource",
+            "uid": "P67060240DC0051B8"
+          },
+          "editorMode": "code",
+          "format": 1,
+          "location": "",
+          "project": "creating-solutions-gcp-shelly",
+          "rawQuery": true,
+          "rawSql": "SELECT device_id, timestamp, consumption FROM `creating-solutions-gcp-shelly.creating_solutions_with_shelly.fridge_data` \r\nwhere $__timeFilter(timestamp) ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "device_id",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "timestamp",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "consumption",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "fridge_data"
+        }
+      ],
+      "title": "Fridge data",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-bigquery-datasource",
+        "uid": "P67060240DC0051B8"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "#EAB839",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 40
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 10,
+        "x": 0,
+        "y": 5
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "format": 0,
+          "location": "",
+          "project": "creating-solutions-gcp-shelly",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  data.src AS device_id,\r\n  TIMESTAMP_SECONDS(LAX_INT64(data.params.ts)) AS timestamp,\r\n  IF(STRPOS(JSON_VALUE(data.src),\"em\")=0, FLOAT64(data.params.`switch:0`.apower), \r\n     FLOAT64(data.params.`em1:0`.act_power)) as power\r\nFROM `creating-solutions-gcp-shelly.creating_solutions_with_shelly.ingress_table`\r\nWHERE \r\n  (data.params.`switch:0`.apower IS NOT NULL or data.params.`em1:0`.act_power is not null)\r\n  and JSON_VALUE(data.src) = \"$device_id\"\r\n  and $__timeFilter(TIMESTAMP_SECONDS(LAX_INT64(data.params.ts)))\r\nORDER BY timestamp\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Power usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-bigquery-datasource",
+        "uid": "P67060240DC0051B8"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 7,
+        "x": 10,
+        "y": 5
+      },
+      "id": 6,
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-orange",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Oranges",
+          "steps": 64
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "mode": "single",
+          "showColorScale": false,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "format": 0,
+          "location": "",
+          "project": "creating-solutions-gcp-shelly",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  data.src AS device_id,\r\n  TIMESTAMP_SECONDS(LAX_INT64(data.params.ts)) AS timestamp,\r\n  IF(STRPOS(JSON_VALUE(data.src),\"em\")=0, FLOAT64(data.params.`switch:0`.apower), \r\n     FLOAT64(data.params.`em1:0`.act_power)) as power\r\nFROM `creating-solutions-gcp-shelly.creating_solutions_with_shelly.ingress_table`\r\nWHERE \r\n  (data.params.`switch:0`.apower IS NOT NULL or data.params.`em1:0`.act_power is not null)\r\n  and JSON_VALUE(data.src) = \"$device_id\"\r\n  and $__timeFilter(TIMESTAMP_SECONDS(LAX_INT64(data.params.ts)))\r\nORDER BY timestamp\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Power usage",
+      "type": "heatmap"
+    },
+    {
+      "datasource": {
+        "type": "grafana-bigquery-datasource",
+        "uid": "P67060240DC0051B8"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 40,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 18
+              },
+              {
+                "color": "red",
+                "value": 25
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 17,
+        "y": 5
+      },
+      "id": 7,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "format": 1,
+          "location": "",
+          "project": "creating-solutions-gcp-shelly",
+          "rawQuery": true,
+          "rawSql": "select\r\n    FLOAT64(data.params.`bthomesensor:202`.value) as temperature,\r\n    TIMESTAMP_SECONDS(LAX_INT64(data.params.ts)) AS time\r\nfrom `creating-solutions-gcp-shelly.creating_solutions_with_shelly.ingress_table`\r\nwhere JSON_VALUE(data.src) = \"shellyplugsg3-3030f9eaa9d0\"\r\n  and data.params.`bthomesensor:202`.value is not null\r\norder by time desc\r\nlimit 1",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Room temperature",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "grafana-bigquery-datasource",
+        "uid": "P67060240DC0051B8"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 13,
+        "x": 0,
+        "y": 11
+      },
+      "id": 5,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "showControls": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "format": 1,
+          "location": "",
+          "project": "creating-solutions-gcp-shelly",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  TIMESTAMP_SECONDS(LAX_INT64(data.params.ts)) AS time,\r\n  CONCAT(\r\n    TO_JSON_STRING(data.src),\r\n      ' | ',\r\n    TO_JSON_STRING(data.params.events)\r\n  ) AS message\r\nFROM `creating-solutions-gcp-shelly.creating_solutions_with_shelly.ingress_table`\r\nWHERE JSON_VALUE(data.method, '$') = \"NotifyEvent\"\r\n  AND $__timeFilter(TIMESTAMP_SECONDS(LAX_INT64(data.params.ts)))\r\nORDER BY time DESC\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Event logs",
+      "type": "logs"
+    }
+  ],
+  "preload": false,
+  "refresh": "5s",
+  "schemaVersion": 42,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "shellyproem50-08f9e0e7fb78",
+          "value": "shellyproem50-08f9e0e7fb78"
+        },
+        "definition": "",
+        "label": "Device id",
+        "name": "device_id",
+        "options": [],
+        "query": {
+          "dataset": "creating_solutions_with_shelly",
+          "editorMode": "code",
+          "format": 1,
+          "location": "",
+          "project": "creating-solutions-gcp-shelly",
+          "rawQuery": true,
+          "rawSql": "SELECT distinct JSON_VALUE(data.src) device_id\r\nFROM `creating-solutions-gcp-shelly.creating_solutions_with_shelly.ingress_table` \r\norder by device_id",
+          "refId": "tempvar",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "data",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "ingress_table"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Shelly Dashboard",
+  "uid": "admd7kk",
+  "version": 25
+}
